@@ -86,7 +86,8 @@ final class QueueStore: ObservableObject {
         observeSystem()
         // A short tick re-reads the interval setting, so changes apply without a restart.
         let timer = Timer(timeInterval: 15, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.tick() }
+            let store = self
+            Task { @MainActor in store?.tick() }
         }
         timer.tolerance = 5
         RunLoop.main.add(timer, forMode: .common)
@@ -110,20 +111,23 @@ final class QueueStore: ObservableObject {
     private func observeSystem() {
         let center = NSWorkspace.shared.notificationCenter
         center.addObserver(forName: NSWorkspace.willSleepNotification, object: nil, queue: .main) { [weak self] _ in
-            Task { @MainActor in self?.isAsleep = true }
+            let store = self
+            Task { @MainActor in store?.isAsleep = true }
         }
         center.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
+            let store = self
             Task { @MainActor in
-                guard let self else { return }
-                self.isAsleep = false
+                guard let store else { return }
+                store.isAsleep = false
                 // Give the network a moment to come back, then poll once.
                 try? await Task.sleep(nanoseconds: 5_000_000_000)
-                await self.refresh()
+                await store.refresh()
             }
         }
         pathMonitor.pathUpdateHandler = { [weak self] path in
             let online = path.status == .satisfied
-            Task { @MainActor in self?.networkChanged(online: online) }
+            let store = self
+            Task { @MainActor in store?.networkChanged(online: online) }
         }
         pathMonitor.start(queue: DispatchQueue(label: "ai.hellofrank.cx-menubar.network"))
     }
