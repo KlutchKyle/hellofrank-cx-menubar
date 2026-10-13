@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  core-linux:
+    name: Core tests (Linux)
+    runs-on: ubuntu-latest
+    container: swift:5.10
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift test
+
+  app-macos:
+    name: App build and tests (macOS)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift --version
+      - run: swift test
+      - run: scripts/build-app.sh
+      - run: plutil -lint "build/HelloFrank CX.app/Contents/Info.plist"

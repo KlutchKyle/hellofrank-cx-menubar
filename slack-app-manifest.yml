@@ -1,0 +1,17 @@
+# Paste into https://api.slack.com/apps → Create New App → From an app manifest,
+# pick the hello, Frank workspace, then Install to Workspace and copy the
+# "User OAuth Token" (xoxp-…) into the app's Settings.
+display_information:
+  name: HelloFrank CX Menu Bar
+  description: Kyle's menu bar viewer for fix proposals. Reads his self-DM and adds ✅/❌ reactions.
+features: {}
+oauth_config:
+  scopes:
+    user:
+      - im:history      # conversations.history / conversations.replies on the self-DM
+      - im:write        # conversations.open to find the self-DM
+      - reactions:write # reactions.add for ✅ / ❌
+settings:
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false
