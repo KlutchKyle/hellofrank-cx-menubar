@@ -205,8 +205,9 @@ final class QueueStore: ObservableObject {
             linearError = nil
             succeeded.insert(.linear)
         case .failure(let error):
-            linearError = Self.describe(error)
-            logger.error("Linear poll failed: \(Self.describe(error), privacy: .public)")
+            let message = Self.describe(error)
+            linearError = message
+            logger.error("Linear poll failed: \(message, privacy: .public)")
             failed = true
         }
 
@@ -222,8 +223,9 @@ final class QueueStore: ObservableObject {
             slackError = nil
             succeeded.insert(.slack)
         case .failure(let error)?:
-            slackError = Self.describe(error)
-            logger.error("Slack poll failed: \(Self.describe(error), privacy: .public)")
+            let message = Self.describe(error)
+            slackError = message
+            logger.error("Slack poll failed: \(message, privacy: .public)")
             if let apiError = error as? APIError, apiError.isAuthFailure {
                 slackIdentity = nil
                 slackChannel = nil
@@ -325,7 +327,8 @@ final class QueueStore: ObservableObject {
         do {
             try stateFile.save(persisted)
         } catch {
-            logger.error("Could not save state: \((error as NSError).code, privacy: .public)")
+            let code = (error as NSError).code
+            logger.error("Could not save state: \(code, privacy: .public)")
         }
     }
 
@@ -349,8 +352,9 @@ final class QueueStore: ObservableObject {
             persist()
             return true
         } catch {
-            proposalActions[ts] = .failed(decision, Self.describe(error))
-            logger.error("reactions.add failed: \(Self.describe(error), privacy: .public)")
+            let message = Self.describe(error)
+            proposalActions[ts] = .failed(decision, message)
+            logger.error("reactions.add failed: \(message, privacy: .public)")
             return false
         }
     }

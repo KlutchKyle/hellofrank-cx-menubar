@@ -17,7 +17,7 @@ enum Keychain {
         var errorDescription: String? { "Keychain error \(status)" }
     }
 
-    private static func query(_ account: Account) -> [String: Any] {
+    private static func baseQuery(_ account: Account) -> [String: Any] {
         [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -26,7 +26,7 @@ enum Keychain {
     }
 
     static func read(_ account: Account) -> String? {
-        var query = query(account)
+        var query = baseQuery(account)
         query[kSecReturnData as String] = true
         query[kSecMatchLimit as String] = kSecMatchLimitOne
         var result: AnyObject?
@@ -40,9 +40,9 @@ enum Keychain {
     static func save(_ value: String, for account: Account) throws {
         let data = Data(value.utf8)
         let update: [String: Any] = [kSecValueData as String: data]
-        let status = SecItemUpdate(query(account) as CFDictionary, update as CFDictionary)
+        let status = SecItemUpdate(baseQuery(account) as CFDictionary, update as CFDictionary)
         if status == errSecItemNotFound {
-            var add = query(account)
+            var add = baseQuery(account)
             add[kSecValueData as String] = data
             add[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
             add[kSecAttrLabel as String] = "HelloFrank CX (\(account.rawValue))"
@@ -54,7 +54,7 @@ enum Keychain {
     }
 
     static func delete(_ account: Account) throws {
-        let status = SecItemDelete(query(account) as CFDictionary)
+        let status = SecItemDelete(baseQuery(account) as CFDictionary)
         guard status == errSecSuccess || status == errSecItemNotFound else { throw Failure(status: status) }
     }
 }
